@@ -61,18 +61,20 @@ module SimpleAudit
           class_inheritable_reader :audit_changes
 
           has_many :audits, :as => :auditable, :class_name => '::SimpleAudit::Audit'
-
-          after_create {|record| record.class.audit(record, :create)}
-          after_update {|record| record.class.audit(record, :update)}
+          
+          attr_accessor :simple_audit_phase
+          after_update {|record| record.simple_audit_action = :update }
+          after_create {|record| record.simple_audit_action = :create}
+          after_save {|record| record.class.audit(record)}
 
         end
       end
 
-      def audit(record, action = :update, user = nil) #:nodoc:
+      def audit(record, user = nil) #:nodoc:
         user ||= User.current if User.respond_to?(:current)
         record.audits.create(:user => user,
           :username => user.try(self.username_method),
-          :action => action.to_s,
+          :action => record.simple_audit_action.to_s,
           :change_log => self.audit_changes.call(record)
         )
       end
