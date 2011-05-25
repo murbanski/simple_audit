@@ -62,7 +62,7 @@ module SimpleAudit
 
           has_many :audits, :as => :auditable, :class_name => '::SimpleAudit::Audit'
           
-          attr_accessor :simple_audit_phase
+          attr_accessor :simple_audit_action
           after_update {|record| record.simple_audit_action = :update }
           after_create {|record| record.simple_audit_action = :create}
           after_save {|record| record.class.audit(record)}
